@@ -9,7 +9,7 @@ Cada equipo del laboratorio cuenta con un código QR que dirige al usuario a un 
 ## Equipos registrados
 
 | Equipo | Parámetro |
-|--------|--------|-----------|
+|--------|--------|
 | MasterSizer | | 
 | Microscópio Óptico | | 
 | XRF | |
