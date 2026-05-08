@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Disponibilidad de Equipos — Laboratorio</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --garnet: #7B0000;
+  --red: #C0392B;
+  --red-light: #F4CCCC;
+  --cream: #FAF8F5;
+  --ink: #1A1A1A;
+  --muted: #6B6B6B;
+  --border: #E5E0D8;
+  --approved: #1A6B3A;
+  --approved-bg: #E8F5EE;
+  --pending: #7A5800;
+  --pending-bg: #FFF8E1;
+  --rejected: #8B1A1A;
+  --rejected-bg: #FDE8E8;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--cream);
+  color: var(--ink);
+  min-height: 100vh;
+}
+
+header {
+  background: var(--garnet);
+  color: white;
+  padding: 28px 40px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.header-icon {
+  width: 48px; height: 48px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+}
+
+header h1 { font-family: 'DM Serif Display', serif; font-size: 24px; font-weight: 400; }
+header p  { font-size: 13px; opacity: 0.75; margin-top: 2px; }
+
+.main { max-width: 1000px; margin: 0 auto; padding: 36px 24px; }
+
+/* Selector de equipo */
+.equipo-tabs {
+  display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 32px;
+}
+.tab {
+  padding: 8px 18px;
+  border: 1.5px solid var(--border);
+  border-radius: 20px;
+  background: white;
+  font-size: 13px;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  color: var(--muted);
+  transition: all .2s;
+}
+.tab:hover { border-color: var(--red); color: var(--red); }
+.tab.active {
+  background: var(--garnet);
+  border-color: var(--garnet);
+  color: white;
+  font-weight: 500;
+}
+
+/* Semana nav */
+.semana-nav {
+  display: flex; align-items: center; gap: 16px; margin-bottom: 24px;
+}
+.semana-nav h2 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 20px; font-weight: 400;
+  flex: 1; text-align: center;
+}
+.btn-nav {
+  width: 36px; height: 36px; border-radius: 50%;
+  border: 1.5px solid var(--border);
+  background: white; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; color: var(--muted);
+  transition: all .2s;
+}
+.btn-nav:hover { border-color: var(--garnet); color: var(--garnet); }
+
+/* Grilla semanal */
+.grilla {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.grilla-header {
+  display: grid;
+  grid-template-columns: 64px repeat(5, 1fr);
+  border-bottom: 1.5px solid var(--border);
+}
+.grilla-header-cell {
+  padding: 12px 8px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+  border-right: 1px solid var(--border);
+}
+.grilla-header-cell:last-child { border-right: none; }
+.grilla-header-cell .dia-num {
+  font-size: 20px;
+  font-family: 'DM Serif Display', serif;
+  color: var(--ink);
+  display: block;
+  margin-top: 2px;
+}
+.grilla-header-cell.hoy { background: var(--red-light); }
+.grilla-header-cell.hoy .dia-num { color: var(--garnet); }
+
+.grilla-row {
+  display: grid;
+  grid-template-columns: 64px repeat(5, 1fr);
+  border-bottom: 1px solid var(--border);
+}
+.grilla-row:last-child { border-bottom: none; }
+
+.hora-label {
+  padding: 10px 8px;
+  font-size: 11px;
+  color: var(--muted);
+  text-align: right;
+  border-right: 1px solid var(--border);
+  display: flex; align-items: flex-start; justify-content: flex-end;
+  padding-top: 6px;
+}
+
+.celda {
+  border-right: 1px solid var(--border);
+  min-height: 44px;
+  position: relative;
+  padding: 3px;
+}
+.celda:last-child { border-right: none; }
+.celda.hoy { background: #FDFAF8; }
+
+/* Bloques de reserva */
+.bloque {
+  border-radius: 5px;
+  padding: 4px 7px;
+  font-size: 11px;
+  line-height: 1.3;
+  cursor: pointer;
+  transition: opacity .15s;
+  overflow: hidden;
+}
+.bloque:hover { opacity: 0.85; }
+.bloque.aprobada {
+  background: var(--approved-bg);
+  border-left: 3px solid var(--approved);
+  color: var(--approved);
+}
+.bloque.pendiente {
+  background: var(--pending-bg);
+  border-left: 3px solid var(--pending);
+  color: var(--pending);
+}
+.bloque strong { display: block; font-size: 11px; }
+.bloque span   { opacity: 0.8; font-size: 10px; }
+
+/* Leyenda */
+.leyenda {
+  display: flex; gap: 20px; margin-top: 16px; align-items: center;
+  flex-wrap: wrap;
+}
+.leyenda-item {
+  display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--muted);
+}
+.leyenda-dot {
+  width: 12px; height: 12px; border-radius: 3px;
+}
+.leyenda-dot.aprobada { background: var(--approved); }
+.leyenda-dot.pendiente { background: var(--pending); }
+
+/* Panel de solicitud */
+.solicitar-btn {
+  position: fixed; bottom: 28px; right: 28px;
+  background: var(--garnet);
+  color: white;
+  padding: 14px 24px;
+  border-radius: 30px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px; font-weight: 500;
+  text-decoration: none;
+  box-shadow: 0 4px 20px rgba(123,0,0,0.35);
+  display: flex; align-items: center; gap: 8px;
+  transition: transform .2s, box-shadow .2s;
+}
+.solicitar-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 28px rgba(123,0,0,0.45);
+}
+
+/* Tooltip */
+.tooltip {
+  display: none;
+  position: absolute;
+  background: var(--ink);
+  color: white;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  z-index: 100;
+  white-space: nowrap;
+  top: calc(100% + 6px);
+  left: 0;
+  min-width: 180px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+  pointer-events: none;
+}
+.bloque:hover .tooltip { display: block; }
+
+.sin-reservas {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 48px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+@media (max-width: 600px) {
+  header { padding: 20px 16px; }
+  .main  { padding: 20px 12px; }
+  .grilla-header-cell .dia-num { font-size: 16px; }
+  .hora-label { font-size: 10px; padding: 6px 4px; }
+  .solicitar-btn { bottom: 16px; right: 16px; padding: 12px 18px; font-size: 13px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-icon">🔬</div>
+  <div>
+    <h1>Disponibilidad de Equipos</h1>
+    <p>Laboratorio de Calidad — Ver horarios y solicitar reservas</p>
+  </div>
+</header>
+
+<div class="main">
+
+  <!-- Tabs de equipos -->
+  <div class="equipo-tabs" id="equipoTabs"></div>
+
+  <!-- Navegación semanal -->
+  <div class="semana-nav">
+    <button class="btn-nav" onclick="cambiarSemana(-1)">&#8592;</button>
+    <h2 id="tituloSemana"></h2>
+    <button class="btn-nav" onclick="cambiarSemana(1)">&#8594;</button>
+  </div>
+
+  <!-- Grilla -->
+  <div class="grilla" id="grilla"></div>
+
+  <!-- Leyenda -->
+  <div class="leyenda">
+    <div class="leyenda-item"><div class="leyenda-dot aprobada"></div> Reserva confirmada</div>
+    <div class="leyenda-item"><div class="leyenda-dot pendiente"></div> Pendiente de aprobación</div>
+  </div>
+
+</div>
+
+<!-- Botón flotante -->
+<a href="#" class="solicitar-btn" id="btnSolicitar">
+  📅 Solicitar horario
+</a>
+
+<script>
+// ── DATOS: aquí conectas con tu Google Sheets via API o pones datos estáticos ──
+// Para empezar sin API, edita este array manualmente o conéctalo a tu Sheets.
+// Formato: { equipo, solicitante, proyecto, fecha (YYYY-MM-DD), horaIni, horaFin, estado }
+
+const EQUIPOS = [
+  { id: "HI708",  nombre: "HI 708 Nitrito",   form: "https://forms.gle/TU_FORM_HI708" },
+  { id: "HI709",  nombre: "HI 709 Manganeso",  form: "https://forms.gle/TU_FORM_HI709" },
+  { id: "HI3811", nombre: "HI 3811 Alcalinidad", form: "https://forms.gle/TU_FORM_HI3811" },
+  { id: "DR1900", nombre: "DR 1900 Aluminio",  form: "https://forms.gle/TU_FORM_DR1900" },
+];
+
+// ── REEMPLAZAR con datos reales o fetch de tu Sheets API ──────
+// Para cargar desde Google Sheets publicado como CSV:
+// const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/TU_ID/export?format=csv&gid=0";
+const RESERVAS_EJEMPLO = [
+  // estos son datos de ejemplo — reemplaza con fetch real
+  { equipo:"HI708",  solicitante:"Yanara H.", proyecto:"Control agua", fecha: hoyStr(0), horaIni:"09:00", horaFin:"10:30", estado:"aprobada" },
+  { equipo:"HI708",  solicitante:"Bárbara G.", proyecto:"Proceso A",   fecha: hoyStr(1), horaIni:"14:00", horaFin:"15:00", estado:"pendiente" },
+  { equipo:"HI709",  solicitante:"Carlos M.", proyecto:"Torre B",      fecha: hoyStr(0), horaIni:"11:00", horaFin:"12:00", estado:"aprobada" },
+  { equipo:"DR1900", solicitante:"Ana P.",     proyecto:"Acuicultura",  fecha: hoyStr(2), horaIni:"10:00", horaFin:"11:00", estado:"aprobada" },
+];
+
+function hoyStr(delta) {
+  const d = new Date(); d.setDate(d.getDate() + delta);
+  return d.toISOString().slice(0,10);
+}
+
+// ── ESTADO ────────────────────────────────────────────────────
+let equipoActivo = EQUIPOS[0].id;
+let semanaOffset = 0;
+const HORAS = ["08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00"];
+const DIAS_SHORT = ["Lun","Mar","Mié","Jue","Vie"];
+
+function getLunes(offset) {
+  const hoy = new Date();
+  const dia = hoy.getDay();
+  const diffLunes = dia === 0 ? -6 : 1 - dia;
+  const lunes = new Date(hoy);
+  lunes.setDate(hoy.getDate() + diffLunes + offset * 7);
+  lunes.setHours(0,0,0,0);
+  return lunes;
+}
+
+function formatFecha(d) {
+  return d.toISOString().slice(0,10);
+}
+
+function semanaStr(lunes) {
+  const viernes = new Date(lunes); viernes.setDate(lunes.getDate() + 4);
+  const meses = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+  if (lunes.getMonth() === viernes.getMonth()) {
+    return `${lunes.getDate()} – ${viernes.getDate()} de ${meses[lunes.getMonth()]} ${lunes.getFullYear()}`;
+  }
+  return `${lunes.getDate()} ${meses[lunes.getMonth()]} – ${viernes.getDate()} ${meses[viernes.getMonth()]} ${lunes.getFullYear()}`;
+}
+
+function renderTabs() {
+  const cont = document.getElementById("equipoTabs");
+  cont.innerHTML = EQUIPOS.map(e =>
+    `<button class="tab${e.id===equipoActivo?' active':''}" onclick="setEquipo('${e.id}')">${e.nombre}</button>`
+  ).join("");
+}
+
+function setEquipo(id) {
+  equipoActivo = id;
+  const eq = EQUIPOS.find(e => e.id === id);
+  document.getElementById("btnSolicitar").href = eq.form;
+  renderTabs();
+  renderGrilla();
+}
+
+function cambiarSemana(d) { semanaOffset += d; renderGrilla(); }
+
+function tieneConflicto(reservas, fecha, horaIni, horaFin) {
+  return reservas.some(r => {
+    if (r.fecha !== fecha) return false;
+    const t = s => { const [h,m] = s.split(":").map(Number); return h*60+m; };
+    return t(horaIni) < t(r.horaFin) && t(r.horaIni) < t(horaFin);
+  });
+}
+
+function renderGrilla() {
+  const lunes  = getLunes(semanaOffset);
+  document.getElementById("tituloSemana").textContent = semanaStr(lunes);
+
+  const hoy = formatFecha(new Date());
+  const dias = Array.from({length:5}, (_,i) => {
+    const d = new Date(lunes); d.setDate(lunes.getDate() + i);
+    return { label: DIAS_SHORT[i], fecha: formatFecha(d), esHoy: formatFecha(d) === hoy };
+  });
+
+  const reservas = RESERVAS_EJEMPLO.filter(r => r.equipo === equipoActivo);
+
+  let html = `<div class="grilla-header">
+    <div class="grilla-header-cell" style="font-size:11px;color:var(--muted);display:flex;align-items:center;justify-content:center;">Hora</div>
+    ${dias.map(d => `<div class="grilla-header-cell${d.esHoy?' hoy':''}">
+      <span style="text-transform:uppercase;letter-spacing:.05em">${d.label}</span>
+      <span class="dia-num">${parseInt(d.fecha.slice(8))}</span>
+    </div>`).join("")}
+  </div>`;
+
+  HORAS.forEach((hora, hi) => {
+    html += `<div class="grilla-row">
+      <div class="hora-label">${hora}</div>
+      ${dias.map(d => {
+        const bloques = reservas.filter(r => r.fecha === d.fecha && r.horaIni >= hora && r.horaIni < (HORAS[hi+1]||"19:00"));
+        const bloquesHtml = bloques.map(b => `
+          <div class="bloque ${b.estado}" style="position:relative">
+            <strong>${b.horaIni}–${b.horaFin}</strong>
+            <span>${b.solicitante}</span>
+            <div class="tooltip">${b.solicitante}<br>${b.proyecto}<br>${b.horaIni}–${b.horaFin}</div>
+          </div>`).join("");
+        return `<div class="celda${d.esHoy?' hoy':''}">${bloquesHtml}</div>`;
+      }).join("")}
+    </div>`;
+  });
+
+  document.getElementById("grilla").innerHTML = html;
+}
+
+// ── INIT ─────────────────────────────────────────────────────
+renderTabs();
+renderGrilla();
+document.getElementById("btnSolicitar").href = EQUIPOS[0].form;
+</script>
+</body>
+</html>
