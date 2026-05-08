@@ -1,4 +1,4 @@
-# Sistema de Reserva de Equipos — Laboratorio de Calidad
+# Sistema de Reserva de Equipos — Laboratorio ProDevs - AMTC - Universidad de Chile
 
 Sistema digital de gestión y disponibilidad de equipos analíticos, desarrollado sobre Google Workspace.
 
