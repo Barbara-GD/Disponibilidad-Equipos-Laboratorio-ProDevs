@@ -288,14 +288,14 @@ header p  { font-size: 13px; opacity: 0.75; margin-top: 2px; }
 // Formato: { equipo, solicitante, proyecto, fecha (YYYY-MM-DD), horaIni, horaFin, estado }
 
 const EQUIPOS = [
-  { id: "MasterSizer",  nombre: "MM",   form: "https://docs.google.com/forms/d/e/1FAIpQLSc6L4JUlzAUaMPN7p-g-BenOYohoXVM4L4zde38-HJOXFyHLw/viewform?usp=pp_url&entry.1448724591=Master+Sizer" },
-  { id: "Microscopio óptico",  nombre: "MO",  form: "https://docs.google.com/forms/d/e/1FAIpQLSc6L4JUlzAUaMPN7p-g-BenOYohoXVM4L4zde38-HJOXFyHLw/viewform?usp=pp_url&entry.1448724591=Microscopio+%C3%B3ptico" },
+  { id: "MasterSizer",  nombre: "MasterSizer",   form: "https://docs.google.com/forms/d/e/1FAIpQLSc6L4JUlzAUaMPN7p-g-BenOYohoXVM4L4zde38-HJOXFyHLw/viewform?usp=pp_url&entry.1448724591=Master+Sizer" },
+  { id: "Microscopio óptico",  nombre: "Microscopio óptico",  form: "https://docs.google.com/forms/d/e/1FAIpQLSc6L4JUlzAUaMPN7p-g-BenOYohoXVM4L4zde38-HJOXFyHLw/viewform?usp=pp_url&entry.1448724591=Microscopio+%C3%B3ptico" },
   { id: "XRF", nombre: "XRF", form: "https://docs.google.com/forms/d/e/1FAIpQLSc6L4JUlzAUaMPN7p-g-BenOYohoXVM4L4zde38-HJOXFyHLw/viewform?usp=pp_url&entry.1448724591=XRF" },
 ];
 
 // ── REEMPLAZAR con datos reales o fetch de tu Sheets API ──────
 // Para cargar desde Google Sheets publicado como CSV:
-// const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/TU_ID/export?format=csv&gid=0";
+// const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/1xOnloejEg223PMQ91RVBIA34wgqg5Q2iniTPqnTNEGY/export?format=csv&gid=0";
 const RESERVAS_EJEMPLO = [
   // estos son datos de ejemplo — reemplaza con fetch real
   { equipo:"MasterSizer",  solicitante:"Yanara H.", proyecto:"Control agua", fecha: hoyStr(0), horaIni:"09:00", horaFin:"10:30", estado:"aprobada" },
