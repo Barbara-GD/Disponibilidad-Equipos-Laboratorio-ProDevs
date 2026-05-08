@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Disponibilidad de Equipos — Laboratorio</title>
+<title>Disponibilidad de Equipos — Laboratorio ProDevs</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -250,7 +250,7 @@ header p  { font-size: 13px; opacity: 0.75; margin-top: 2px; }
   <div class="header-icon">🔬</div>
   <div>
     <h1>Disponibilidad de Equipos</h1>
-    <p>Laboratorio de Calidad — Ver horarios y solicitar reservas</p>
+    <p>Laboratorio ProDevs — Ver horarios y solicitar reservas</p>
   </div>
 </header>
 
@@ -288,10 +288,9 @@ header p  { font-size: 13px; opacity: 0.75; margin-top: 2px; }
 // Formato: { equipo, solicitante, proyecto, fecha (YYYY-MM-DD), horaIni, horaFin, estado }
 
 const EQUIPOS = [
-  { id: "HI708",  nombre: "HI 708 Nitrito",   form: "https://forms.gle/TU_FORM_HI708" },
-  { id: "HI709",  nombre: "HI 709 Manganeso",  form: "https://forms.gle/TU_FORM_HI709" },
-  { id: "HI3811", nombre: "HI 3811 Alcalinidad", form: "https://forms.gle/TU_FORM_HI3811" },
-  { id: "DR1900", nombre: "DR 1900 Aluminio",  form: "https://forms.gle/TU_FORM_DR1900" },
+  { id: "MasterSizer",  nombre: "MM",   form: "https://docs.google.com/forms/d/e/1FAIpQLSc6L4JUlzAUaMPN7p-g-BenOYohoXVM4L4zde38-HJOXFyHLw/viewform?usp=pp_url&entry.1448724591=Master+Sizer" },
+  { id: "Microscopio óptico",  nombre: "MO",  form: "https://docs.google.com/forms/d/e/1FAIpQLSc6L4JUlzAUaMPN7p-g-BenOYohoXVM4L4zde38-HJOXFyHLw/viewform?usp=pp_url&entry.1448724591=Microscopio+%C3%B3ptico" },
+  { id: "XRF", nombre: "XRF", form: "https://forms.gle/https://docs.google.com/forms/d/e/1FAIpQLSc6L4JUlzAUaMPN7p-g-BenOYohoXVM4L4zde38-HJOXFyHLw/viewform?usp=pp_url&entry.1448724591=XRF" },
 ];
 
 // ── REEMPLAZAR con datos reales o fetch de tu Sheets API ──────
@@ -299,10 +298,9 @@ const EQUIPOS = [
 // const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/TU_ID/export?format=csv&gid=0";
 const RESERVAS_EJEMPLO = [
   // estos son datos de ejemplo — reemplaza con fetch real
-  { equipo:"HI708",  solicitante:"Yanara H.", proyecto:"Control agua", fecha: hoyStr(0), horaIni:"09:00", horaFin:"10:30", estado:"aprobada" },
-  { equipo:"HI708",  solicitante:"Bárbara G.", proyecto:"Proceso A",   fecha: hoyStr(1), horaIni:"14:00", horaFin:"15:00", estado:"pendiente" },
-  { equipo:"HI709",  solicitante:"Carlos M.", proyecto:"Torre B",      fecha: hoyStr(0), horaIni:"11:00", horaFin:"12:00", estado:"aprobada" },
-  { equipo:"DR1900", solicitante:"Ana P.",     proyecto:"Acuicultura",  fecha: hoyStr(2), horaIni:"10:00", horaFin:"11:00", estado:"aprobada" },
+  { equipo:"MasterSizer",  solicitante:"Yanara H.", proyecto:"Control agua", fecha: hoyStr(0), horaIni:"09:00", horaFin:"10:30", estado:"aprobada" },
+  { equipo:"Microscopio",  solicitante:"Bárbara G.", proyecto:"Proceso A",   fecha: hoyStr(1), horaIni:"14:00", horaFin:"15:00", estado:"pendiente" },
+  { equipo:"XRF",  solicitante:"Carlos M.", proyecto:"Torre B",      fecha: hoyStr(0), horaIni:"11:00", horaFin:"12:00", estado:"aprobada" },
 ];
 
 function hoyStr(delta) {
