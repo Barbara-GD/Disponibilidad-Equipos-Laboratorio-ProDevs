@@ -296,12 +296,28 @@ const EQUIPOS = [
 // ── REEMPLAZAR con datos reales o fetch de tu Sheets API ──────
 // Para cargar desde Google Sheets publicado como CSV:
 // const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/1xOnloejEg223PMQ91RVBIA34wgqg5Q2iniTPqnTNEGY/export?format=csv&gid=0";
-const RESERVAS_EJEMPLO = [
-  // estos son datos de ejemplo — reemplaza con fetch real
-  { equipo:"MasterSizer",  solicitante:"Yanara H.", proyecto:"Control agua", fecha: hoyStr(0), horaIni:"09:00", horaFin:"10:30", estado:"aprobada" },
-  { equipo:"Microscopio",  solicitante:"Bárbara G.", proyecto:"Proceso A",   fecha: hoyStr(1), horaIni:"14:00", horaFin:"15:00", estado:"pendiente" },
-  { equipo:"XRF",  solicitante:"Carlos M.", proyecto:"Torre B",      fecha: hoyStr(0), horaIni:"11:00", horaFin:"12:00", estado:"aprobada" },
-];
+let RESERVAS_EJEMPLO = [];
+
+async function cargarReservas() {
+  const res = await fetch(SHEET_CSV_URL);
+  const csv = await res.text();
+
+  const filas = csv.trim().split("\n");
+  const headers = filas[0].split(",");
+
+  RESERVAS_EJEMPLO = filas.slice(1).map(fila => {
+    const valores = fila.split(",");
+
+    let obj = {};
+    headers.forEach((h, i) => {
+      obj[h.trim()] = valores[i]?.trim();
+    });
+
+    return obj;
+  });
+
+  renderGrilla();
+}
 
 function hoyStr(delta) {
   const d = new Date(); d.setDate(d.getDate() + delta);
