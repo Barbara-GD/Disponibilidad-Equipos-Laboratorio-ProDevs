@@ -14,11 +14,5 @@ Cada equipo del laboratorio cuenta con un código QR que dirige al usuario a un 
 | Microscópio Óptico | | 
 | XRF | |
 
-## Archivos
 
-| Archivo | Descripción |
-|---------|-------------|
-| `index.html` | Página pública de disponibilidad semanal |
-| `codigo_apps_script.gs` | Script de Google Apps Script (notificaciones y aprobaciones) |
-| `etiquetas_qr.html` | Generador de etiquetas QR imprimibles por equipo |
-
+En desarrollo...
