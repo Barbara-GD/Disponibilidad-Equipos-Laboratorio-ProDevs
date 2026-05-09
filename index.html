@@ -288,41 +288,156 @@ header p  { font-size: 13px; opacity: 0.75; margin-top: 2px; }
 // Formato: { equipo, solicitante, proyecto, fecha (YYYY-MM-DD), horaIni, horaFin, estado }
 
 const EQUIPOS = [
-  { id: "MasterSizer",  nombre: "MasterSizer",   form: "https://docs.google.com/forms/d/e/1FAIpQLSc6L4JUlzAUaMPN7p-g-BenOYohoXVM4L4zde38-HJOXFyHLw/viewform?usp=pp_url&entry.1448724591=Master+Sizer" },
-  { id: "Microscopio óptico",  nombre: "Microscopio óptico",  form: "https://docs.google.com/forms/d/e/1FAIpQLSc6L4JUlzAUaMPN7p-g-BenOYohoXVM4L4zde38-HJOXFyHLw/viewform?usp=pp_url&entry.1448724591=Microscopio+%C3%B3ptico" },
+  { id: "MasterSizer", nombre: "MasterSizer", form: "https://docs.google.com/forms/d/e/1FAIpQLSc6L4JUlzAUaMPN7p-g-BenOYohoXVM4L4zde38-HJOXFyHLw/viewform?usp=pp_url&entry.1448724591=Master+Sizer" },
+  { id: "Microscopio óptico", nombre: "Microscopio óptico", form: "https://docs.google.com/forms/d/e/1FAIpQLSc6L4JUlzAUaMPN7p-g-BenOYohoXVM4L4zde38-HJOXFyHLw/viewform?usp=pp_url&entry.1448724591=Microscopio+%C3%B3ptico" },
   { id: "XRF", nombre: "XRF", form: "https://docs.google.com/forms/d/e/1FAIpQLSc6L4JUlzAUaMPN7p-g-BenOYohoXVM4L4zde38-HJOXFyHLw/viewform?usp=pp_url&entry.1448724591=XRF" },
 ];
 
-// ── REEMPLAZAR con datos reales o fetch de tu Sheets API ──────
-// Para cargar desde Google Sheets publicado como CSV:
-// const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/1xOnloejEg223PMQ91RVBIA34wgqg5Q2iniTPqnTNEGY/export?format=csv&gid=0";
-let RESERVAS_EJEMPLO = [];
+// ── URL GOOGLE SHEETS ──
+const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/TU_ID/pub?gid=0&single=true&output=csv";
+
+let RESERVAS = [];
+let equipoActivo = EQUIPOS[0].id;
+let semanaOffset = 0;
+const HORAS = ["08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00"];
+const DIAS_SHORT = ["Lun","Mar","Mié","Jue","Vie"];
 
 async function cargarReservas() {
-  const res = await fetch(SHEET_CSV_URL);
-  const csv = await res.text();
+  try {
+    const res = await fetch(SHEET_CSV_URL);
+    const csv = await res.text();
+    const filas = csv.trim().split("\n").slice(1); // saltar encabezado
 
-  const filas = csv.trim().split("\n");
-  const headers = filas[0].split(",");
+    RESERVAS = filas.map(fila => {
+      // separar por coma respetando comillas
+      const cols = fila.match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g) || [];
+      const limpiar = s => (s || "").replace(/^"|"$/g, "").trim();
 
-  RESERVAS_EJEMPLO = filas.slice(1).map(fila => {
-    const valores = fila.split(",");
+      const fechaRaw = limpiar(cols[3]);  // columna D — Fecha
+      const fechaObj = new Date(fechaRaw);
+      const fecha = !isNaN(fechaObj)
+        ? fechaObj.toISOString().slice(0, 10)
+        : fechaRaw;
 
-    let obj = {};
-    headers.forEach((h, i) => {
-      obj[h.trim()] = valores[i]?.trim();
-    });
+      const horaIni = limpiar(cols[6]);   // columna G — Hora inicio
+      const horaFin = limpiar(cols[7]);   // columna H — Hora fin
 
-    return obj;
-  });
+      // normalizar hora a HH:MM
+      function normHora(h) {
+        if (!h) return "00:00";
+        const m = h.match(/(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(AM|PM)?/i);
+        if (!m) return h;
+        let hh = parseInt(m[1]);
+        const mm = m[2];
+        const ampm = m[4];
+        if (ampm) {
+          if (ampm.toUpperCase() === "PM" && hh !== 12) hh += 12;
+          if (ampm.toUpperCase() === "AM" && hh === 12) hh = 0;
+        }
+        return String(hh).padStart(2, "0") + ":" + mm;
+      }
 
+      const estado = limpiar(cols[9]);    // columna J — Estado
+
+      return {
+        equipo:      limpiar(cols[5]),    // columna F — Equipo
+        solicitante: limpiar(cols[1]),    // columna B — Nombre
+        proyecto:    limpiar(cols[4]),    // columna E — Proyecto
+        fecha:       fecha,
+        horaIni:     normHora(horaIni),
+        horaFin:     normHora(horaFin),
+        estado:      estado === "APROBADA" ? "aprobada" : "pendiente",
+      };
+    }).filter(r => r.equipo && r.fecha);  // descartar filas vacías
+
+  } catch(e) {
+    console.error("Error cargando reservas:", e);
+  }
   renderGrilla();
 }
 
-function hoyStr(delta) {
-  const d = new Date(); d.setDate(d.getDate() + delta);
-  return d.toISOString().slice(0,10);
+function getLunes(offset) {
+  const hoy = new Date();
+  const dia = hoy.getDay();
+  const diffLunes = dia === 0 ? -6 : 1 - dia;
+  const lunes = new Date(hoy);
+  lunes.setDate(hoy.getDate() + diffLunes + offset * 7);
+  lunes.setHours(0,0,0,0);
+  return lunes;
 }
+
+function formatFecha(d) { return d.toISOString().slice(0,10); }
+
+function semanaStr(lunes) {
+  const viernes = new Date(lunes); viernes.setDate(lunes.getDate() + 4);
+  const meses = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+  if (lunes.getMonth() === viernes.getMonth()) {
+    return `${lunes.getDate()} – ${viernes.getDate()} de ${meses[lunes.getMonth()]} ${lunes.getFullYear()}`;
+  }
+  return `${lunes.getDate()} ${meses[lunes.getMonth()]} – ${viernes.getDate()} ${meses[viernes.getMonth()]} ${lunes.getFullYear()}`;
+}
+
+function renderTabs() {
+  const cont = document.getElementById("equipoTabs");
+  cont.innerHTML = EQUIPOS.map(e =>
+    `<button class="tab${e.id===equipoActivo?' active':''}" onclick="setEquipo('${e.id}')">${e.nombre}</button>`
+  ).join("");
+}
+
+function setEquipo(id) {
+  equipoActivo = id;
+  document.getElementById("btnSolicitar").href = EQUIPOS.find(e => e.id === id).form;
+  renderTabs();
+  renderGrilla();
+}
+
+function cambiarSemana(d) { semanaOffset += d; renderGrilla(); }
+
+function renderGrilla() {
+  const lunes = getLunes(semanaOffset);
+  document.getElementById("tituloSemana").textContent = semanaStr(lunes);
+  const hoy = formatFecha(new Date());
+  const dias = Array.from({length:5}, (_,i) => {
+    const d = new Date(lunes); d.setDate(lunes.getDate() + i);
+    return { label: DIAS_SHORT[i], fecha: formatFecha(d), esHoy: formatFecha(d) === hoy };
+  });
+
+  const reservas = RESERVAS.filter(r => r.equipo === equipoActivo);
+
+  let html = `<div class="grilla-header">
+    <div class="grilla-header-cell" style="font-size:11px;color:var(--muted);display:flex;align-items:center;justify-content:center;">Hora</div>
+    ${dias.map(d => `<div class="grilla-header-cell${d.esHoy?' hoy':''}">
+      <span style="text-transform:uppercase;letter-spacing:.05em">${d.label}</span>
+      <span class="dia-num">${parseInt(d.fecha.slice(8))}</span>
+    </div>`).join("")}
+  </div>`;
+
+  HORAS.forEach((hora, hi) => {
+    html += `<div class="grilla-row">
+      <div class="hora-label">${hora}</div>
+      ${dias.map(d => {
+        const bloques = reservas.filter(r =>
+          r.fecha === d.fecha && r.horaIni >= hora && r.horaIni < (HORAS[hi+1]||"19:00")
+        );
+        const bloquesHtml = bloques.map(b => `
+          <div class="bloque ${b.estado}" style="position:relative">
+            <strong>${b.horaIni}–${b.horaFin}</strong>
+            <span>${b.solicitante}</span>
+            <div class="tooltip">${b.solicitante}<br>${b.proyecto}<br>${b.horaIni}–${b.horaFin}</div>
+          </div>`).join("");
+        return `<div class="celda${d.esHoy?' hoy':''}">${bloquesHtml}</div>`;
+      }).join("")}
+    </div>`;
+  });
+
+  document.getElementById("grilla").innerHTML = html;
+}
+
+// ── INIT ─────────────────────────────────────────────────────
+renderTabs();
+document.getElementById("btnSolicitar").href = EQUIPOS[0].form;
+cargarReservas(); // carga datos reales y luego renderiza
+setInterval(cargarReservas, 60000); // refresca cada 60 segundos
 
 // ── ESTADO ────────────────────────────────────────────────────
 let equipoActivo = EQUIPOS[0].id;
