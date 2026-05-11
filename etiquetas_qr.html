@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Etiquetas QR — Equipos de Laboratorio</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #f0ebe3;
+    padding: 32px 24px;
+    color: #1a1a1a;
+  }
+
+  .screen-header {
+    max-width: 900px;
+    margin: 0 auto 32px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+
+  .screen-header h1 {
+    font-size: 22px;
+    font-weight: 600;
+    color: #1a1a1a;
+  }
+  .screen-header p {
+    font-size: 13px;
+    color: #666;
+    margin-top: 4px;
+    max-width: 480px;
+    line-height: 1.6;
+  }
+
+  .btn-print {
+    background: #7B0000;
+    color: white;
+    border: none;
+    padding: 10px 22px;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .btn-print:hover { background: #600000; }
+
+  .config-panel {
+    max-width: 900px;
+    margin: 0 auto 32px;
+    background: white;
+    border-radius: 12px;
+    padding: 20px 24px;
+    border: 1px solid #e0dbd3;
+  }
+  .config-panel h2 {
+    font-size: 13px;
+    font-weight: 600;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    margin-bottom: 16px;
+  }
+  .config-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+  }
+  .config-field label {
+    display: block;
+    font-size: 12px;
+    color: #888;
+    margin-bottom: 4px;
+  }
+  .config-field input {
+    width: 100%;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 7px 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: #1a1a1a;
+  }
+  .config-field input:focus { outline: none; border-color: #7B0000; }
+
+  .grid {
+    max-width: 900px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+  }
+
+  .etiqueta {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #e0dbd3;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .etiqueta-header {
+    background: #7B0000;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .lab-name {
+    font-size: 10px;
+    color: rgba(255,255,255,0.75);
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    font-weight: 500;
+  }
+
+  .etiqueta-body {
+    padding: 14px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .equipo-nombre {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1a1a1a;
+    text-align: center;
+    line-height: 1.3;
+  }
+  .equipo-subtitulo {
+    font-size: 11px;
+    color: #888;
+    text-align: center;
+    line-height: 1.4;
+  }
+
+  .qr-wrap {
+    width: 130px;
+    height: 130px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 6px;
+    background: white;
+  }
+  .qr-wrap canvas,
+  .qr-wrap img { width: 100% !important; height: 100% !important; }
+
+  .etiqueta-footer {
+    border-top: 1px solid #f0ebe3;
+    padding: 8px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .instruccion {
+    font-size: 10px;
+    color: #aaa;
+    line-height: 1.4;
+  }
+  .codigo-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    background: #f5f0ea;
+    color: #7B0000;
+    padding: 3px 7px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+
+  .url-display {
+    font-size: 10px;
+    color: #bbb;
+    text-align: center;
+    word-break: break-all;
+    padding: 0 14px 10px;
+    font-family: 'DM Mono', monospace;
+    line-height: 1.4;
+  }
+
+  @media print {
+    body { background: white; padding: 0; }
+    .screen-header, .config-panel, .no-print { display: none !important; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8mm;
+      max-width: 100%;
+      padding: 8mm;
+    }
+    .etiqueta {
+      break-inside: avoid;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+    .url-display { display: none; }
+    @page { size: A4; margin: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="screen-header no-print">
+  <div>
+    <h1>Etiquetas QR para equipos</h1>
+    <p>Configura la URL de tu formulario o página, edita los equipos y haz clic en Imprimir. Los QR nunca caducan mientras la URL esté activa.</p>
+  </div>
+  <button class="btn-print" onclick="window.print()">Imprimir etiquetas</button>
+</div>
+
+<div class="config-panel no-print">
+  <h2>Configuración</h2>
+  <div class="config-grid">
+    <div class="config-field">
+      <label>Nombre del laboratorio</label>
+      <input type="text" id="cfg-lab" value="Laboratorio ProDevs" oninput="regenerar()">
+    </div>
+    <div class="config-field">
+      <label>URL base del formulario / disponibilidad</label>
+      <input type="text" id="cfg-url" value="http://github.com/Barbara-GD/Disponibilidad-Equipos-Laboratorio-ProDevs" oninput="regenerar()" placeholder="https://forms.gle/...  o  http://github.com/Barbara-GD/Disponibilidad-Equipos-Laboratorio-ProDevs/">
+    </div>
+  </div>
+</div>
+
+<div class="grid" id="grid"></div>
+
+<script>
+const EQUIPOS = [
+  { codigo: "MS",  nombre: "MasterSizer",    parametro: "Tamaño particulas",      param_url: "?https://docs.google.com/forms/d/e/1FAIpQLSc6L4JUlzAUaMPN7p-g-BenOYohoXVM4L4zde38-HJOXFyHLw/viewform?usp=pp_url&entry.1448724591=Master+Sizer" },
+  { codigo: "MO",  nombre: "Microscopio",    parametro: "Detalles",    param_url: "https://docs.google.com/forms/d/e/1FAIpQLSc6L4JUlzAUaMPN7p-g-BenOYohoXVM4L4zde38-HJOXFyHLw/viewform?usp=pp_url&entry.1448724591=Microscopio+%C3%B3ptico" },
+  { codigo: "XRF", nombre: "XRF",        parametro: "Espectro",      param_url: "https://forms.gle/https://docs.google.com/forms/d/e/1FAIpQLSc6L4JUlzAUaMPN7p-g-BenOYohoXVM4L4zde38-HJOXFyHLw/viewform?usp=pp_url&entry.1448724591=XRF" },
+];
+
+function regenerar() {
+  const lab = document.getElementById('cfg-lab').value || 'Laboratorio ProDevs';
+  const base = document.getElementById('cfg-url').value || 'https://script.google.com/macros/s/AKfycbzi1fE-dj627oELvrB-xfEWdpK0tLPufsUPb4rL0ZB_9wzyvIAmF7YOQZI8g1k5ghLLRg/exec';
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+
+  EQUIPOS.forEach(eq => {
+    const url = base + eq.param_url;
+
+    const card = document.createElement('div');
+    card.className = 'etiqueta';
+    card.innerHTML = `
+      <div class="etiqueta-header">
+        <div>
+          <div class="lab-name">${lab}</div>
+        </div>
+      </div>
+      <div class="etiqueta-body">
+        <div class="equipo-nombre">${eq.nombre}</div>
+        <div class="equipo-subtitulo">${eq.parametro}</div>
+        <div class="qr-wrap" id="qr-${eq.codigo}"></div>
+      </div>
+      <div class="etiqueta-footer">
+        <div class="instruccion">Escanea para<br>solicitar horario</div>
+        <div class="codigo-badge">${eq.codigo}</div>
+      </div>
+      <div class="url-display">${url}</div>
+    `;
+    grid.appendChild(card);
+
+    setTimeout(() => {
+      new QRCode(document.getElementById('qr-' + eq.codigo), {
+        text: url,
+        width: 118,
+        height: 118,
+        colorDark: "#1a1a1a",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.M
+      });
+    }, 50);
+  });
+}
+
+regenerar();
+</script>
+</body>
+</html>
