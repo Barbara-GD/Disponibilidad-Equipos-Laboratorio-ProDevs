@@ -239,7 +239,7 @@ function getLunes(offset) {
 function renderGrilla() {
   const lunes = getLunes(semanaOffset);
   const meses = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
-  document.getElementById("tituloSemana").textContent = `Semana del ${lunes.getDate()} de ${meses[lunes.getMonth()} de ${lunes.getFullYear()]}`;
+  document.getElementById("tituloSemana").textContent = `Semana del ${lunes.getDate()} de ${meses[lunes.getMonth()]} de ${lunes.getFullYear()}`;
 
   const hoyStr = new Date().toISOString().split('T')[0];
   const dias = Array.from({length:5}, (_,i) => {
