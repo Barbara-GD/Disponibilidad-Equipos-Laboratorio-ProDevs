@@ -127,24 +127,21 @@
 <script>
 // Lista de equipos con su nombre exacto para el formulario
 const EQUIPOS = [
-  { codigo: "FBRX",  nombre: "FBRX",    detalle: "Reactor de lecho fluido",  param: "FBRX" },
-  { codigo: "MS",    nombre: "MasterSizer",    detalle: "Analizador de partículas",  param: "Master+Sizer" },
-  { codigo: "MO",    nombre: "Microscopio Óptico",    detalle: "Microscopio Leica",  param: "Microscopio+óptico" },
-  { codigo: "XRF",   nombre: "Espectrómetro XRF",    detalle: "Análisis Químico",  param: "XRF" },
+  { codigo: "FBRM",  nombre: "FBRM",    parametro: "Tamaño de partículas y Recuento en tiempo real",  param_url: "?usp=pp_url&entry.1448724591=FBRM" },
+  { codigo: "MS",    nombre: "MasterSizer",    parametro: "Distribución tamaño de partículas",  param_url: "?usp=pp_url&entry.1448724591=Master+Sizer" },
+  { codigo: "MO",    nombre: "Microscopio Óptico",    parametro: "Análisis Visual",  param_url: "?usp=pp_url&entry.1448724591=Microscopio+óptico" },
+  { codigo: "XRF",   nombre: "Espectrómetro XRF",    parametro: "Composición Elemental",  param_url: "?usp=pp_url&entry.1448724591=XRF" },
 ];
-
 function regenerar() {
-  const lab = document.getElementById('cfg-lab').value || 'Laboratorio';
+  const lab  = document.getElementById('cfg-lab').value || 'Laboratorio';
   const base = document.getElementById('cfg-url').value;
   const grid = document.getElementById('grid');
-  
+
   if (!grid) return;
   grid.innerHTML = '';
 
   EQUIPOS.forEach(eq => {
-    // Construcción de la URL de pre-llenado para Google Forms
-    // Usamos el ID del campo de equipo: 1448724591
-    const urlFinal = `${base}?usp=pp_url&entry.1448724591=${eq.param}`;
+    const urlFinal = base + eq.param_url;  // ← era eq.param (incorrecto)
 
     const card = document.createElement('div');
     card.className = 'etiqueta';
@@ -154,7 +151,7 @@ function regenerar() {
       </div>
       <div class="etiqueta-body">
         <div class="equipo-nombre">${eq.nombre}</div>
-        <div class="equipo-subtitulo">${eq.detalle}</div>
+        <div class="equipo-subtitulo">${eq.parametro}</div>
         <div class="qr-wrap" id="qr-${eq.codigo}"></div>
       </div>
       <div class="etiqueta-footer">
@@ -164,7 +161,6 @@ function regenerar() {
     `;
     grid.appendChild(card);
 
-    // Generar el QR
     new QRCode(document.getElementById('qr-' + eq.codigo), {
       text: urlFinal,
       width: 110,
