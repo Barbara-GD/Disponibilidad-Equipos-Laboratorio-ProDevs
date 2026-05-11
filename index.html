@@ -240,3 +240,11 @@ function renderTabs() {
 function setEquipo(id) {
   equipoActivo = id;
   document.getElementById("btnSolicitar").href = EQUIPOS.find(e =>
+
+// INIT
+renderTabs();
+cargarReservas();
+setInterval(cargarReservas, 60000);
+</script>
+</body>
+</html>
