@@ -61,28 +61,51 @@ header p  { font-size: 13px; opacity: 0.75; }
   border-bottom: 2px solid var(--garnet); /* Opcional: una rayita abajo para resaltar más */
 }
 
-.grilla-cuerpo { position: relative; display: grid; grid-template-columns: 95px repeat(5, 1fr); height: 500px; }
-.hora-label-col {
-  display: flex;
-  flex-direction: column;
+.grilla-cuerpo {
+  position: relative;
+  display: grid;
+  grid-template-columns: 95px repeat(5, 1fr) !important;
+  height: 450px;
+  background-image: url("https://barbara-gd.github.io/Disponibilidad-Equipos-Laboratorio-ProDevs/images/logo-amtc.png");
+  background-repeat: no-repeat;
+  background-position: center 60%; /* Lo bajamos un poquito para que luzca mejor */
+  background-size: 300px;
+  background-color: white; /* Fondo base */
+}
+
+/* 2. El "velo" para que el logo no moleste a la lectura */
+.grilla-cuerpo::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background-color: rgba(255, 255, 255, 0.85); /* Opacidad al 85% para que el logo se vea suave */
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* 3. Las columnas de los días DEBEN ser transparentes para que se vea el fondo */
+.dia-columna {
+  position: relative;
+  z-index: 1;
+  background-color: transparent !important; 
+  background-image: linear-gradient(var(--border) 1px, transparent 1px);
+  background-size: 100% 50px;
   border-right: 1px solid var(--border);
-  background: white; /* Asegura que no se vea el logo detrás de los números */
+}
+
+/* 4. La columna de las horas sí necesita fondo para que no se mezcle con el logo */
+.hora-label-col {
+  position: relative;
   z-index: 2;
+  background: white; 
+  border-right: 1px solid var(--border);
 }
-.hora-hito {
-  height: 50px;           /* Altura exacta de la fila */
-  flex-shrink: 0;         /* Evita que se encojan */
-  font-size: 10px;
-  color: var(--muted);
-  border-bottom: 1px solid #f0f0f0;
-  display: flex;
-  align-items: center;    /* Centrado vertical */
-  justify-content: center; /* Centrado horizontal */
-  padding: 0 5px;
-  box-sizing: border-box;
+
+/* 5. El resaltado de "Hoy" ahora es un borde, para no tapar el logo con color sólido */
+.dia-columna.hoy {
+  background-color: rgba(123, 0, 0, 0.03) !important; /* Un toque rojizo casi invisible */
+  box-shadow: inset 0 0 0 1px rgba(123, 0, 0, 0.1); 
 }
-.dia-columna { position: relative; border-right: 1px solid var(--border); background-image: linear-gradient(var(--border) 1px, transparent 1px); background-size: 100% 50px; }
-.dia-columna.hoy { background-color: transparent !important; }
 
 .bloque { position: absolute; left: 4px; right: 4px; z-index: 5; border-radius: 6px; padding: 4px 8px; font-size: 11px; line-height: 1.2; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
 .bloque.aprobada  { background: var(--approved-bg); border-left: 4px solid var(--approved); color: var(--approved); }
