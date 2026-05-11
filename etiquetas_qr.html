@@ -182,16 +182,6 @@
     white-space: nowrap;
   }
 
-  .url-display {
-    font-size: 10px;
-    color: #bbb;
-    text-align: center;
-    word-break: break-all;
-    padding: 0 14px 10px;
-    font-family: 'DM Mono', monospace;
-    line-height: 1.4;
-  }
-
   @media print {
     body { background: white; padding: 0; }
     .screen-header, .config-panel, .no-print { display: none !important; }
@@ -207,7 +197,6 @@
       border: 1px solid #ccc;
       border-radius: 8px;
     }
-    .url-display { display: none; }
     @page { size: A4; margin: 0; }
   }
 </style>
@@ -217,7 +206,7 @@
 <div class="screen-header no-print">
   <div>
     <h1>Etiquetas QR para equipos</h1>
-    <p>Configura la URL de tu formulario o página, edita los equipos y haz clic en Imprimir. Los QR nunca caducan mientras la URL esté activa.</p>
+    <p>Configura la URL de tu formulario o página, edita los equipos e imprime.</p>
   </div>
   <button class="btn-print" onclick="window.print()">Imprimir etiquetas</button>
 </div>
@@ -230,8 +219,8 @@
       <input type="text" id="cfg-lab" value="Laboratorio ProDevs" oninput="regenerar()">
     </div>
     <div class="config-field">
-      <label>URL base del formulario / disponibilidad</label>
-      <input type="text" id="cfg-url" value="http://github.com/Barbara-GD/Disponibilidad-Equipos-Laboratorio-ProDevs" oninput="regenerar()" placeholder="https://forms.gle/...  o  http://github.com/Barbara-GD/Disponibilidad-Equipos-Laboratorio-ProDevs/">
+      <label>URL base</label>
+      <input type="text" id="cfg-url" value="http://github.com/Barbara-GD/Disponibilidad-Equipos-Laboratorio-ProDevs" oninput="regenerar()">
     </div>
   </div>
 </div>
@@ -240,14 +229,15 @@
 
 <script>
 const EQUIPOS = [
-  { codigo: "MS",  nombre: "MasterSizer",    parametro: "Tamaño particulas",      param_url: "?https://docs.google.com/forms/d/e/1FAIpQLSc6L4JUlzAUaMPN7p-g-BenOYohoXVM4L4zde38-HJOXFyHLw/viewform?usp=pp_url&entry.1448724591=Master+Sizer" },
-  { codigo: "MO",  nombre: "Microscopio",    parametro: "Detalles",    param_url: "https://docs.google.com/forms/d/e/1FAIpQLSc6L4JUlzAUaMPN7p-g-BenOYohoXVM4L4zde38-HJOXFyHLw/viewform?usp=pp_url&entry.1448724591=Microscopio+%C3%B3ptico" },
-  { codigo: "XRF", nombre: "XRF",        parametro: "Espectro",      param_url: "https://forms.gle/https://docs.google.com/forms/d/e/1FAIpQLSc6L4JUlzAUaMPN7p-g-BenOYohoXVM4L4zde38-HJOXFyHLw/viewform?usp=pp_url&entry.1448724591=XRF" },
+  { codigo: "FBRM",  nombre: "FBRM",    parametro: "Tamaño partículas",      param_url: "?https://docs.google.com/forms/d/e/1FAIpQLSc6L4JUlzAUaMPN7p-g-BenOYohoXVM4L4zde38-HJOXFyHLw/viewform?usp=pp_url&entry.1448724591=Master+Sizer" },
+  { codigo: "MS",   nombre: "MasterSizer",    parametro: "Tamaño partículas",      param_url: "?https://docs.google.com/forms/d/e/1FAIpQLSc6L4JUlzAUaMPN7p-g-BenOYohoXVM4L4zde38-HJOXFyHLw/viewform?usp=pp_url&entry.1448724591=Master+Sizer" },
+  { codigo: "MO",   nombre: "Microscopio Óptico",    parametro: "Análisis visual",    param_url: "https://docs.google.com/forms/d/e/1FAIpQLSc6L4JUlzAUaMPN7p-g-BenOYohoXVM4L4zde38-HJOXFyHLw/viewform?usp=pp_url&entry.1448724591=Microscopio+%C3%B3ptico" },
+  { codigo: "XRF",  nombre: "Espectrómetro XRF",    parametro: "Espectro elemental",      param_url: "https://docs.google.com/forms/d/e/1FAIpQLSc6L4JUlzAUaMPN7p-g-BenOYohoXVM4L4zde38-HJOXFyHLw/viewform?usp=pp_url&entry.1448724591=XRF" },
 ];
 
 function regenerar() {
   const lab = document.getElementById('cfg-lab').value || 'Laboratorio ProDevs';
-  const base = document.getElementById('cfg-url').value || 'https://script.google.com/macros/s/AKfycbzi1fE-dj627oELvrB-xfEWdpK0tLPufsUPb4rL0ZB_9wzyvIAmF7YOQZI8g1k5ghLLRg/exec';
+  const base = document.getElementById('cfg-url').value;
   const grid = document.getElementById('grid');
   grid.innerHTML = '';
 
@@ -258,37 +248,9 @@ function regenerar() {
     card.className = 'etiqueta';
     card.innerHTML = `
       <div class="etiqueta-header">
-        <div>
           <div class="lab-name">${lab}</div>
-        </div>
       </div>
-      <div class="etiqueta-body">
-        <div class="equipo-nombre">${eq.nombre}</div>
-        <div class="equipo-subtitulo">${eq.parametro}</div>
-        <div class="qr-wrap" id="qr-${eq.codigo}"></div>
-      </div>
-      <div class="etiqueta-footer">
-        <div class="instruccion">Escanea para<br>solicitar horario</div>
-        <div class="codigo-badge">${eq.codigo}</div>
-      </div>
-      <div class="url-display">${url}</div>
-    `;
-    grid.appendChild(card);
-
-    setTimeout(() => {
-      new QRCode(document.getElementById('qr-' + eq.codigo), {
-        text: url,
-        width: 118,
-        height: 118,
-        colorDark: "#1a1a1a",
-        colorLight: "#ffffff",
-        correctLevel: QRCode.CorrectLevel.M
-      });
-    }, 50);
-  });
-}
-
-regenerar();
+      <div class="etiqueta-
 </script>
 </body>
 </html>
