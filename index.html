@@ -37,11 +37,18 @@ header p  { font-size: 13px; opacity: 0.75; }
 .btn-nav { width: 36px; height: 36px; border-radius: 50%; border: 1.5px solid var(--border); background: white; cursor: pointer; }
 
 .grilla { background: white; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; position: relative; }
+
+/* Configuración de columnas: 95px para horas, resto equitativo */
+.grilla-header, .grilla-cuerpo {
+  display: grid;
+  grid-template-columns: 95px repeat(5, 1fr) !important;
+}
+
 .grilla-header { 
-  display: grid; 
-  grid-template-columns: 95px repeat(5, 1fr); /* Debe coincidir con el cuerpo */
   border-bottom: 1.5px solid var(--border);
   background: white;
+  z-index: 10;
+  position: relative;
 }
 
 .grilla-header-cell {
@@ -49,41 +56,55 @@ header p  { font-size: 13px; opacity: 0.75; }
   text-align: center;
   font-size: 12px;
   color: var(--muted);
-  border-right: 1px solid var(--border); /* Esto alinea la línea vertical con la columna de horas */
+  border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
 }
 .grilla-header-cell .dia-num { font-size: 20px; font-family: 'DM Serif Display', serif; color: var(--ink); display: block; }
-.grilla-header-cell.hoy {
-  background: var(--red-light) !important;
-  border-bottom: 2px solid var(--garnet); /* Opcional: una rayita abajo para resaltar más */
-}
+.grilla-header-cell.hoy { background: var(--red-light) !important; }
 
 .grilla-cuerpo {
   position: relative;
-  display: grid;
-  grid-template-columns: 95px repeat(5, 1fr) !important;
-  height: 450px;
+  height: 450px; /* 9 horas x 50px */
   background-image: url("https://barbara-gd.github.io/Disponibilidad-Equipos-Laboratorio-ProDevs/images/logo-amtc.png");
   background-repeat: no-repeat;
-  background-position: center 60%; /* Lo bajamos un poquito para que luzca mejor */
+  background-position: center 60%;
   background-size: 300px;
-  background-color: white; /* Fondo base */
+  background-color: white;
 }
 
-/* 2. El "velo" para que el logo no moleste a la lectura */
+/* El velo para ver el logo suavemente */
 .grilla-cuerpo::before {
   content: "";
   position: absolute;
   top: 0; left: 0; width: 100%; height: 100%;
-  background-color: rgba(255, 255, 255, 0.85); /* Opacidad al 85% para que el logo se vea suave */
+  background-color: rgba(255, 255, 255, 0.85); 
   z-index: 0;
   pointer-events: none;
 }
 
-/* 3. Las columnas de los días DEBEN ser transparentes para que se vea el fondo */
+.hora-label-col {
+  position: relative;
+  z-index: 2;
+  background: rgba(255, 255, 255, 0.9); /* Fondo ligero para leer bien las horas */
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+}
+
+.hora-hito {
+  height: 50px;
+  flex-shrink: 0;
+  font-size: 10px;
+  color: var(--muted);
+  border-bottom: 1px solid #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .dia-columna {
   position: relative;
   z-index: 1;
@@ -92,85 +113,29 @@ header p  { font-size: 13px; opacity: 0.75; }
   background-size: 100% 50px;
   border-right: 1px solid var(--border);
 }
-
-/* 4. La columna de las horas sí necesita fondo para que no se mezcle con el logo */
-.hora-label-col {
-  position: relative;
-  z-index: 2;
-  background: white; 
-  border-right: 1px solid var(--border);
-}
-
-/* 5. El resaltado de "Hoy" ahora es un borde, para no tapar el logo con color sólido */
-.dia-columna.hoy {
-  background-color: rgba(123, 0, 0, 0.03) !important; /* Un toque rojizo casi invisible */
-  box-shadow: inset 0 0 0 1px rgba(123, 0, 0, 0.1); 
-}
+.dia-columna.hoy { background-color: rgba(123, 0, 0, 0.03) !important; }
 
 .bloque { position: absolute; left: 4px; right: 4px; z-index: 5; border-radius: 6px; padding: 4px 8px; font-size: 11px; line-height: 1.2; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
 .bloque.aprobada  { background: var(--approved-bg); border-left: 4px solid var(--approved); color: var(--approved); }
 .bloque.pendiente { background: var(--pending-bg);  border-left: 4px solid var(--pending);  color: var(--pending); }
 .bloque strong { display: block; font-size: 10px; }
 
+.bloque.cerrado {
+  background: rgba(128, 128, 128, 0.15) !important; 
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  pointer-events: none;
+  z-index: 1; 
+}
+
 .tooltip { display: none; position: absolute; background: var(--ink); color: white; padding: 10px; border-radius: 8px; font-size: 11px; z-index: 100; left: 105%; top: 0; min-width: 150px; }
 .bloque:hover .tooltip { display: block; }
 
 .solicitar-btn { position: fixed; bottom: 28px; right: 28px; background: var(--garnet); color: white; padding: 14px 24px; border-radius: 30px; text-decoration: none; font-weight: 500; box-shadow: 0 4px 20px rgba(123,0,0,0.35); }
-
 .estado-carga { text-align: center; padding: 40px; color: var(--muted); }
-
-/* Logo de fondo optimizado */
-.grilla-cuerpo { 
-  position: relative; 
-  display: grid; 
-  grid-template-columns: 95px repeat(5, 1fr); /* Asegúrate que sea 95px */
-  height: 450px; /* 9 rangos de 50px exactos */
-}
-/* Esta es la clave: hacemos que el fondo del cuerpo sea translúcido */
-.grilla-cuerpo::before {
-  content: "";
-  position: absolute;
-  top: 0; left: 0; width: 100%; height: 100%;
-  background-color: rgba(250, 248, 245, 0.7); /* Esto aplica la opacidad sobre el logo */
-  z-index: 0;
-  pointer-events: none;
-}
-
-/* Aseguramos que las columnas no tapen el logo */
-.dia-columna {
-  position: relative;
-  border-right: 1px solid var(--border);
-  background-image: linear-gradient(var(--border) 1px, transparent 1px);
-  background-size: 100% 50px;
-  background-color: transparent !important; /* Forzamos transparencia */
-  z-index: 1; /* Por encima del pseudo-elemento de fondo */
-}
-
-/* El día "hoy" con una transparencia leve para que se siga viendo el logo */
-.dia-columna.hoy {
-  background-color: rgba(244, 204, 204, 0.2) !important; 
-}
-
-/* Los bloques siempre arriba de todo */
-.bloque {
-  z-index: 5;
-}
-
-.hora-label-col {
-  z-index: 2;
-  background: var(--cream); /* Para que las horas no se mezclen con el logo */
-} 
-/* Bloque para horarios no laborales (Viernes tarde) */
-.bloque.cerrado {
-  background: rgba(128, 128, 128, 0.15) !important; 
-  border: none !important; /* Quitamos bordes */
-  box-shadow: none !important; /* Quitamos sombra */
-  border-radius: 0 !important; /* Quitamos esquinas redondeadas */
-  left: 0 !important; /* Pegado a la izquierda */
-  right: 0 !important; /* Pegado a la derecha */
-  pointer-events: none;
-  z-index: 1; 
-}  
 </style>
 </head>
 <body>
@@ -208,7 +173,7 @@ const EQUIPOS = [
 const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vROupCZFhkJmydG40DfVPcgA3Z0g24pSml5xGa8mp0LQJAd2YO6qxoxUVF425pugwep1TdWqoti_M8a/pub?gid=554439506&single=true&output=csv";
 
 const HORAS = ["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00"];
-const H_INICIO = 9 * 60; // Se mantiene en 9:00 AM
+const H_INICIO = 9 * 60; 
 const DIAS_SHORT = ["Lun","Mar","Mié","Jue","Vie"];
 
 let RESERVAS = [];
@@ -217,12 +182,11 @@ let semanaOffset = 0;
 
 function limpiar(s) { return (s || "").replace(/^"|"$/g, "").trim(); }
 
-// FUNCIÓN CORREGIDA: Según tu imagen, el Sheet usa formato M/D/YYYY (ej: 5/12/2026)
 function normFecha(raw) {
   if (!raw) return "";
   const d = new Date(raw);
   if (isNaN(d.getTime())) return raw;
-  return d.toISOString().split('T')[0]; // Devuelve YYYY-MM-DD
+  return d.toISOString().split('T')[0];
 }
 
 function normHora(h) {
@@ -230,10 +194,8 @@ function normHora(h) {
   const m = h.match(/(\d{1,2}):(\d{2})/);
   if (!m) return "00:00";
   let hh = parseInt(m[1]);
-  const isPM = h.toUpperCase().includes("PM");
-  const isAM = h.toUpperCase().includes("AM");
-  if (isPM && hh < 12) hh += 12;
-  if (isAM && hh === 12) hh = 0;
+  if (h.toUpperCase().includes("PM") && hh < 12) hh += 12;
+  if (h.toUpperCase().includes("AM") && hh === 12) hh = 0;
   return hh.toString().padStart(2,"0") + ":" + m[2];
 }
 
@@ -246,8 +208,7 @@ async function cargarReservas() {
     RESERVAS = filas.map(fila => {
       const cols = fila.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
       if (cols.length < 10) return null;
-      
-      const estado = limpiar(cols[9]).toUpperCase(); // Columna J (Estado)
+      const estado = limpiar(cols[9]).toUpperCase();
       if (estado.includes("RECHAZAD")) return null;
 
       return {
@@ -313,7 +274,6 @@ function renderGrilla() {
 
   const reservas = RESERVAS.filter(r => r.equipo === equipoActivo);
   const toMin = s => { const p = s.split(":"); return parseInt(p[0])*60 + parseInt(p[1]); };
-  const H_INICIO = 9 * 60;
 
   let html = `<div class="grilla-header"><div class="grilla-header-cell">Hora</div>`;
   dias.forEach(d => {
@@ -323,35 +283,25 @@ function renderGrilla() {
   });
   html += `</div><div class="grilla-cuerpo">`;
   
-  // Lateral de horas (mostrando rangos)
   html += `<div class="hora-label-col">
-    ${HORAS.map((h, i) => {
-      // Si es el último elemento, no mostramos rango porque no hay hora siguiente
-      if (i === HORAS.length - 1) return ""; 
-      return `<div class="hora-hito" style="font-size: 10px;">${h} - ${HORAS[i+1]}</div>`;
-    }).join("")}
+    ${HORAS.slice(0, -1).map((h, i) => `<div class="hora-hito">${h} - ${HORAS[i+1]}</div>`).join("")}
   </div>`;
 
   dias.forEach(d => {
     html += `<div class="dia-columna ${d.esHoy?'hoy':''}">`;
 
-    // --- SOMBREADO VIERNES TARDE ---
-if (d.label === "Vie") {
-  const minCierre = 14 * 60; 
-  const minFinCal = 18 * 60; // Terminamos justo en la línea de las 18:00
-  
-  const topC = ((minCierre - H_INICIO) / 60) * 50;
-  const heightC = ((minFinCal - minCierre) / 60) * 50;
-  
-  html += `<div class="bloque cerrado" style="top:${topC}px; height:${heightC}px;"></div>`;
-}
+    if (d.label === "Vie") {
+      const topC = ((14*60 - H_INICIO) / 60) * 50;
+      const heightC = ((18*60 - 14*60) / 60) * 50;
+      html += `<div class="bloque cerrado" style="top:${topC}px; height:${heightC}px;"></div>`;
+    }
+
     reservas.filter(r => r.fecha === d.fecha).forEach(b => {
       try {
         const minI = toMin(b.horaIni);
         const minF = toMin(b.horaFin);
         const top = ((minI - H_INICIO) / 60) * 50;
         const height = ((minF - minI) / 60) * 50;
-        
         if (top >= 0) {
           html += `<div class="bloque ${b.estado}" style="top:${top}px; height:${height}px">
             <strong>${b.horaIni}-${b.horaFin}</strong>
@@ -359,7 +309,7 @@ if (d.label === "Vie") {
             <div class="tooltip"><b>${b.solicitante}</b><br>${b.proyecto}</div>
           </div>`;
         }
-      } catch(e) { console.error("Error en bloque:", e); }
+      } catch(e) {}
     });
     html += `</div>`;
   });
