@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Etiquetas QR — Equipos de Laboratorio</title>
+<title>Etiquetas QR — Laboratorio ProDevs</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono&display=swap');
@@ -16,6 +16,7 @@
     color: #1a1a1a;
   }
 
+  /* Estilos de la interfaz en pantalla */
   .screen-header {
     max-width: 900px;
     margin: 0 auto 32px;
@@ -27,21 +28,24 @@
   }
 
   .screen-header h1 { font-size: 22px; font-weight: 600; }
+  
   .btn-print {
     background: #7B0000; color: white; border: none; padding: 10px 22px;
-    border-radius: 8px; font-weight: 500; cursor: pointer;
+    border-radius: 8px; font-weight: 500; cursor: pointer; transition: 0.2s;
   }
+  .btn-print:hover { background: #5a0000; }
 
   .config-panel {
     max-width: 900px; margin: 0 auto 32px; background: white;
     border-radius: 12px; padding: 20px 24px; border: 1px solid #e0dbd3;
   }
-  .config-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+  .config-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; }
   .config-field label { display: block; font-size: 12px; color: #888; margin-bottom: 4px; }
   .config-field input {
     width: 100%; border: 1px solid #ddd; border-radius: 6px; padding: 7px 10px; font-size: 13px;
   }
 
+  /* Diseño de la etiqueta */
   .grid {
     max-width: 900px; margin: 0 auto;
     display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px;
@@ -49,36 +53,49 @@
 
   .etiqueta {
     background: white; border-radius: 12px; border: 1px solid #e0dbd3;
-    overflow: hidden; display: flex; flex-direction: column; min-height: 250px;
+    overflow: hidden; display: flex; flex-direction: column; min-height: 260px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
   }
 
   .etiqueta-header { background: #7B0000; padding: 10px 14px; color: white; }
-  .lab-name { font-size: 10px; text-transform: uppercase; letter-spacing: .08em; }
+  .lab-name { font-size: 10px; text-transform: uppercase; letter-spacing: .08em; font-weight: 600; }
 
   .etiqueta-body { padding: 14px; flex: 1; display: flex; flex-direction: column; align-items: center; gap: 10px; }
-  .equipo-nombre { font-size: 13px; font-weight: 600; text-align: center; }
+  .equipo-nombre { font-size: 14px; font-weight: 600; text-align: center; color: #1a1a1a; }
   .equipo-subtitulo { font-size: 11px; color: #888; text-align: center; }
 
   .qr-wrap {
     width: 120px; height: 120px; display: flex; align-items: center; justify-content: center;
-    border: 1px solid #eee; border-radius: 8px; padding: 5px; background: white;
+    border: 1px solid #eee; border-radius: 8px; padding: 6px; background: white;
   }
 
   .etiqueta-footer {
     border-top: 1px solid #f0ebe3; padding: 8px 14px;
     display: flex; align-items: center; justify-content: space-between;
   }
-  .instruccion { font-size: 10px; color: #aaa; }
+  .instruccion { font-size: 9px; color: #999; line-height: 1.2; text-transform: uppercase; font-weight: 500; }
   .codigo-badge {
     font-family: 'DM Mono', monospace; font-size: 10px;
-    background: #f5f0ea; color: #7B0000; padding: 3px 7px; border-radius: 4px;
+    background: #f5f0ea; color: #7B0000; padding: 3px 7px; border-radius: 4px; font-weight: 600;
   }
 
+  /* Estilos de Impresión */
   @media print {
     .no-print { display: none !important; }
     body { background: white; padding: 0; }
-    .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 5mm; padding: 10mm; }
-    .etiqueta { border: 1px solid #000; page-break-inside: avoid; }
+    .grid { 
+      display: grid; 
+      grid-template-columns: repeat(2, 1fr); 
+      gap: 5mm; 
+      padding: 10mm; 
+      max-width: 100%;
+    }
+    .etiqueta { 
+      border: 1px solid #ccc; 
+      page-break-inside: avoid; 
+      box-shadow: none;
+    }
+    @page { size: A4; margin: 0; }
   }
 </style>
 </head>
@@ -86,8 +103,8 @@
 
 <div class="screen-header no-print">
   <div>
-    <h1>Etiquetas QR — ProDevs</h1>
-    <p>Configura los datos abajo y luego imprime. El QR llevará directamente al formulario con el equipo seleccionado.</p>
+    <h1>Generador de Etiquetas QR</h1>
+    <p>Los códigos QR pre-seleccionarán el equipo en el formulario automáticamente.</p>
   </div>
   <button class="btn-print" onclick="window.print()">Imprimir etiquetas</button>
 </div>
@@ -99,8 +116,8 @@
       <input type="text" id="cfg-lab" value="Laboratorio ProDevs" oninput="regenerar()">
     </div>
     <div class="config-field">
-      <label>URL base del Formulario (Google Form)</label>
-      <input type="text" id="cfg-url" value="https://forms.gle/YWkQJBetGwWgDDkH9 " oninput="regenerar()">
+      <label>URL base del Formulario</label>
+      <input type="text" id="cfg-url" value="https://forms.gle/YWkQJBetGwWgDDkH9" oninput="regenerar()">
     </div>
   </div>
 </div>
@@ -108,11 +125,12 @@
 <div class="grid" id="grid"></div>
 
 <script>
+// Lista de equipos con su nombre exacto para el formulario
 const EQUIPOS = [
-  { codigo: "FBRX",  nombre: "FBRX",    parametro: "Reactor de lecho fluido",  param_url: "?usp=pp_url&entry.1448724591=FBRX" },
-  { codigo: "MS",    nombre: "MasterSizer",    parametro: "Analizador de tamaño de partículas",  param_url: "?usp=pp_url&entry.1448724591=Master+Sizer" },
-  { codigo: "MO",    nombre: "Microscopio Óptico",    parametro: "Microscopio Leica",  param_url: "?usp=pp_url&entry.1448724591=Microscopio+óptico" },
-  { codigo: "XRF",   nombre: "Espectrómetro XRF",    parametro: "Análisis Químico",  param_url: "?usp=pp_url&entry.1448724591=XRF" },
+  { codigo: "FBRX",  nombre: "FBRX",    detalle: "Reactor de lecho fluido",  param: "FBRX" },
+  { codigo: "MS",    nombre: "MasterSizer",    detalle: "Analizador de partículas",  param: "Master+Sizer" },
+  { codigo: "MO",    nombre: "Microscopio Óptico",    detalle: "Microscopio Leica",  param: "Microscopio+óptico" },
+  { codigo: "XRF",   nombre: "Espectrómetro XRF",    detalle: "Análisis Químico",  param: "XRF" },
 ];
 
 function regenerar() {
@@ -124,8 +142,9 @@ function regenerar() {
   grid.innerHTML = '';
 
   EQUIPOS.forEach(eq => {
-    // Aquí combinamos la URL base del formulario con el parámetro del equipo
-    const urlFinal = base + eq.param_url;
+    // Construcción de la URL de pre-llenado para Google Forms
+    // Usamos el ID del campo de equipo: 1448724591
+    const urlFinal = `${base}?usp=pp_url&entry.1448724591=${eq.param}`;
 
     const card = document.createElement('div');
     card.className = 'etiqueta';
@@ -135,33 +154,31 @@ function regenerar() {
       </div>
       <div class="etiqueta-body">
         <div class="equipo-nombre">${eq.nombre}</div>
-        <div class="equipo-subtitulo">${eq.parametro}</div>
+        <div class="equipo-subtitulo">${eq.detalle}</div>
         <div class="qr-wrap" id="qr-${eq.codigo}"></div>
       </div>
       <div class="etiqueta-footer">
-        <div class="instruccion">Escanea para<br>reservar equipo</div>
+        <div class="instruccion">Escanea para<br>reservar horario</div>
         <div class="codigo-badge">${eq.codigo}</div>
       </div>
     `;
     grid.appendChild(card);
 
-    // Generar el QR con la URL del formulario
-    try {
-      new QRCode(document.getElementById('qr-' + eq.codigo), {
-        text: urlFinal,
-        width: 110,
-        height: 110,
-        colorDark: "#000000",
-        colorLight: "#ffffff",
-        correctLevel: QRCode.CorrectLevel.M
-      });
-    } catch (e) {
-      console.error("Error al generar QR para " + eq.codigo, e);
-    }
+    // Generar el QR
+    new QRCode(document.getElementById('qr-' + eq.codigo), {
+      text: urlFinal,
+      width: 110,
+      height: 110,
+      colorDark: "#000000",
+      colorLight: "#ffffff",
+      correctLevel: QRCode.CorrectLevel.M
+    });
   });
 }
 
+// Iniciar al cargar
 window.onload = regenerar;
 </script>
 </body>
+</html>
 </html>
