@@ -47,7 +47,7 @@ header p  { font-size: 13px; opacity: 0.75; }
 
 .grilla-cuerpo { position: relative; display: grid; grid-template-columns: 95px repeat(5, 1fr); height: 500px; }
 .hora-label-col { display: flex; flex-direction: column; border-right: 1px solid var(--border); }
-.hora-hito { height: 50px; font-size: 11px; color: var(--muted); text-align: right; padding-right: 8px; border-bottom: 1px solid #f0f0f0; display: flex; align-items: flex-start; justify-content: flex-end; padding-top: 5px; }
+.hora-hito { height: 50px; font-size: 10px; color: var(--muted); text-align: center; padding: 5px 4px 0 4px; border-bottom: 1px solid #f0f0f0; display: flex; align-items: flex-start; justify-content: center; }
 .dia-columna { position: relative; border-right: 1px solid var(--border); background-image: linear-gradient(var(--border) 1px, transparent 1px); background-size: 100% 50px; }
 .dia-columna.hoy { background-color: transparent !important; }
 
@@ -271,8 +271,15 @@ function renderGrilla() {
     </div>`;
   });
   html += `</div><div class="grilla-cuerpo">`;
-
-  html += `<div class="hora-label-col">${HORAS.map(h => `<div class="hora-hito">${h}</div>`).join("")}</div>`;
+  
+  // Lateral de horas (mostrando rangos)
+  html += `<div class="hora-label-col">
+    ${HORAS.map((h, i) => {
+      // Si es el último elemento, no mostramos rango porque no hay hora siguiente
+      if (i === HORAS.length - 1) return ""; 
+      return `<div class="hora-hito" style="font-size: 10px;">${h} - ${HORAS[i+1]}</div>`;
+    }).join("")}
+  </div>`;
 
   dias.forEach(d => {
     html += `<div class="dia-columna ${d.esHoy?'hoy':''}">`;
