@@ -102,18 +102,14 @@ let RESERVAS = [];
 let equipoActivo = EQUIPOS[0].id;
 let semanaOffset = 0;
 
-// Limpieza de datos robusta
 function limpiar(s) { return (s || "").replace(/^"|"$/g, "").trim(); }
 
+// FUNCIÓN CORREGIDA: Según tu imagen, el Sheet usa formato M/D/YYYY (ej: 5/12/2026)
 function normFecha(raw) {
   if (!raw) return "";
-  // Maneja formatos DD/MM/YYYY o YYYY-MM-DD
-  const partes = raw.split(/[-/]/);
-  if (partes.length === 3) {
-    if (partes[0].length === 4) return `${partes[0]}-${partes[1].padStart(2,'0')}-${partes[2].padStart(2,'0')}`;
-    return `${partes[2]}-${partes[1].padStart(2,'0')}-${partes[0].padStart(2,'0')}`;
-  }
-  return raw;
+  const d = new Date(raw);
+  if (isNaN(d.getTime())) return raw;
+  return d.toISOString().split('T')[0]; // Devuelve YYYY-MM-DD
 }
 
 function normHora(h) {
@@ -121,8 +117,10 @@ function normHora(h) {
   const m = h.match(/(\d{1,2}):(\d{2})/);
   if (!m) return "00:00";
   let hh = parseInt(m[1]);
-  if (h.toUpperCase().includes("PM") && hh < 12) hh += 12;
-  if (h.toUpperCase().includes("AM") && hh === 12) hh = 0;
+  const isPM = h.toUpperCase().includes("PM");
+  const isAM = h.toUpperCase().includes("AM");
+  if (isPM && hh < 12) hh += 12;
+  if (isAM && hh === 12) hh = 0;
   return hh.toString().padStart(2,"0") + ":" + m[2];
 }
 
@@ -134,9 +132,9 @@ async function cargarReservas() {
 
     RESERVAS = filas.map(fila => {
       const cols = fila.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-      if (cols.length < 8) return null;
+      if (cols.length < 10) return null;
       
-      const estado = limpiar(cols[9]).toUpperCase();
+      const estado = limpiar(cols[9]).toUpperCase(); // Columna J (Estado)
       if (estado.includes("RECHAZAD")) return null;
 
       return {
@@ -152,14 +150,13 @@ async function cargarReservas() {
     
     renderGrilla();
   } catch(e) {
-    console.error("Error cargando:", e);
-    document.getElementById("grilla").innerHTML = `<div class="estado-carga">⚠️ Error de conexión con el Sheet.</div>`;
+    console.error("Error:", e);
+    document.getElementById("grilla").innerHTML = "Error al cargar datos.";
   }
 }
 
 function renderTabs() {
   const container = document.getElementById("equipoTabs");
-  if (!container) return;
   container.innerHTML = EQUIPOS.map(e =>
     `<button class="tab ${e.id === equipoActivo ? 'active' : ''}" onclick="setEquipo('${e.id}')">
       ${e.nombre}
@@ -169,8 +166,7 @@ function renderTabs() {
 
 function setEquipo(id) {
   equipoActivo = id;
-  const eq = EQUIPOS.find(e => e.id === id);
-  document.getElementById("btnSolicitar").href = eq.form;
+  document.getElementById("btnSolicitar").href = EQUIPOS.find(e => e.id === id).form;
   renderTabs();
   renderGrilla();
 }
@@ -182,8 +178,7 @@ function cambiarSemana(d) {
 
 function getLunes(offset) {
   const hoy = new Date();
-  const actualDia = hoy.getDay();
-  const diff = actualDia === 0 ? -6 : 1 - actualDia;
+  const diff = hoy.getDay() === 0 ? -6 : 1 - hoy.getDay();
   const lunes = new Date(hoy);
   lunes.setDate(hoy.getDate() + diff + (offset * 7));
   lunes.setHours(0,0,0,0);
@@ -205,7 +200,7 @@ function renderGrilla() {
 
   const reservas = RESERVAS.filter(r => r.equipo === equipoActivo);
   const toMin = s => { const p = s.split(":"); return parseInt(p[0])*60 + parseInt(p[1]); };
-  const H_INICIO = 9 * 60; // 09:00 AM
+  const H_INICIO = 9 * 60;
 
   let html = `<div class="grilla-header"><div class="grilla-header-cell">Hora</div>`;
   dias.forEach(d => {
@@ -215,27 +210,23 @@ function renderGrilla() {
   });
   html += `</div><div class="grilla-cuerpo">`;
 
-  // Lateral de horas
   html += `<div class="hora-label-col">${HORAS.map(h => `<div class="hora-hito">${h}</div>`).join("")}</div>`;
 
-  // Columnas por día
   dias.forEach(d => {
     html += `<div class="dia-columna ${d.esHoy?'hoy':''}">`;
     reservas.filter(r => r.fecha === d.fecha).forEach(b => {
-      try {
-        const minI = toMin(b.horaIni);
-        const minF = toMin(b.horaFin);
-        const top = ((minI - H_INICIO) / 60) * 50;
-        const height = ((minF - minI) / 60) * 50;
-        
-        if (top >= 0) {
-          html += `<div class="bloque ${b.estado}" style="top:${top}px; height:${height}px">
-            <strong>${b.horaIni}-${b.horaFin}</strong>
-            <span>${b.solicitante}</span>
-            <div class="tooltip"><b>${b.solicitante}</b><br>${b.proyecto}</div>
-          </div>`;
-        }
-      } catch(e) {}
+      const minI = toMin(b.horaIni);
+      const minF = toMin(b.horaFin);
+      const top = ((minI - H_INICIO) / 60) * 50;
+      const height = ((minF - minI) / 60) * 50;
+      
+      if (top >= 0) {
+        html += `<div class="bloque ${b.estado}" style="top:${top}px; height:${height}px">
+          <strong>${b.horaIni}-${b.horaFin}</strong>
+          <span>${b.solicitante}</span>
+          <div class="tooltip"><b>${b.solicitante}</b><br>${b.proyecto}</div>
+        </div>`;
+      }
     });
     html += `</div>`;
   });
@@ -244,12 +235,10 @@ function renderGrilla() {
   document.getElementById("grilla").innerHTML = html;
 }
 
-// Inicialización
 window.onload = () => {
   renderTabs();
   cargarReservas();
 };
-setInterval(cargarReservas, 60000);
 </script>
 </body>
 </html>
