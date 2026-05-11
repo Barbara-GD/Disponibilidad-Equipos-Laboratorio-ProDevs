@@ -40,13 +40,16 @@ header p  { font-size: 13px; opacity: 0.75; }
 .grilla-header { display: grid; grid-template-columns: 64px repeat(5, 1fr); border-bottom: 1.5px solid var(--border); background: white; z-index: 10; position: relative; }
 .grilla-header-cell { padding: 12px 8px; text-align: center; font-size: 12px; color: var(--muted); border-right: 1px solid var(--border); }
 .grilla-header-cell .dia-num { font-size: 20px; font-family: 'DM Serif Display', serif; color: var(--ink); display: block; }
-.grilla-header-cell.hoy { background: var(--red-light); }
+.grilla-header-cell.hoy {
+  background: var(--red-light) !important;
+  border-bottom: 2px solid var(--garnet); /* Opcional: una rayita abajo para resaltar más */
+}
 
 .grilla-cuerpo { position: relative; display: grid; grid-template-columns: 64px repeat(5, 1fr); height: 500px; }
 .hora-label-col { display: flex; flex-direction: column; border-right: 1px solid var(--border); }
 .hora-hito { height: 50px; font-size: 11px; color: var(--muted); text-align: right; padding-right: 8px; border-bottom: 1px solid #f0f0f0; display: flex; align-items: flex-start; justify-content: flex-end; padding-top: 5px; }
 .dia-columna { position: relative; border-right: 1px solid var(--border); background-image: linear-gradient(var(--border) 1px, transparent 1px); background-size: 100% 50px; }
-.dia-columna.hoy { background-color: #FDFAF8; }
+.dia-columna.hoy { background-color: transparent !important; }
 
 .bloque { position: absolute; left: 4px; right: 4px; z-index: 5; border-radius: 6px; padding: 4px 8px; font-size: 11px; line-height: 1.2; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
 .bloque.aprobada  { background: var(--approved-bg); border-left: 4px solid var(--approved); color: var(--approved); }
