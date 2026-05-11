@@ -112,17 +112,14 @@ header p  { font-size: 13px; opacity: 0.75; }
 } 
 /* Bloque para horarios no laborales (Viernes tarde) */
 .bloque.cerrado {
-  background: #f2f2f2;
-  border-left: 4px solid #d1d1d1;
-  color: #999;
-  z-index: 2; /* Un poco menos que las reservas reales */
-  cursor: not-allowed;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 500;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+  background: rgba(128, 128, 128, 0.15) !important; 
+  border: none !important; /* Quitamos bordes */
+  box-shadow: none !important; /* Quitamos sombra */
+  border-radius: 0 !important; /* Quitamos esquinas redondeadas */
+  left: 0 !important; /* Pegado a la izquierda */
+  right: 0 !important; /* Pegado a la derecha */
+  pointer-events: none;
+  z-index: 1; 
 }  
 </style>
 </head>
@@ -281,16 +278,15 @@ function renderGrilla() {
     html += `<div class="dia-columna ${d.esHoy?'hoy':''}">`;
 
     // --- SOMBREADO VIERNES TARDE ---
-    if (d.label === "Vie") {
-      const minCierre = 14 * 60; // 14:00 hrs
-      const minFinCal = 18 * 60; // Hasta las 18:00 hrs
-      
-      const topC = ((minCierre - H_INICIO) / 60) * 50;
-      const heightC = ((minFinCal - minCierre) / 60) * 50;
-      
-      // Solo el div vacío para que funcione como sombra
-      html += `<div class="bloque cerrado" style="top:${topC}px; height:${heightC}px;"></div>`;
-    }
+if (d.label === "Vie") {
+  const minCierre = 14 * 60; // 14:00 hrs
+  const minFinCal = 18 * 60; // 18:00 hrs EXACTAS (según tu imagen)
+  
+  const topC = ((minCierre - H_INICIO) / 60) * 50;
+  const heightC = ((minFinCal - minCierre) / 60) * 50;
+  
+  html += `<div class="bloque cerrado" style="top:${topC}px; height:${heightC}px;"></div>`;
+}
 
     reservas.filter(r => r.fecha === d.fecha).forEach(b => {
       try {
