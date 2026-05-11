@@ -317,30 +317,28 @@ function setEquipo(id) {
 }
 
 // ── RENDER ───────────────────────────────────────────────────
-function renderTabs() {
-  document.getElementById("equipoTabs").innerHTML = EQUIPOS.map(e =>
-    `<button class="tab${e.id===equipoActivo?' active':''}" onclick="setEquipo('${e.id.replace(/'/g,"\\'")}')">
-      ${e.nombre}
-    </button>`
-  ).join("");
-}
-
 function renderGrilla() {
   const lunes = getLunes(semanaOffset);
   document.getElementById("tituloSemana").textContent = semanaStr(lunes);
-  const hoy  = formatFecha(new Date());
+  const hoy = formatFecha(new Date());
+  
   const dias = Array.from({length:5}, (_,i) => {
     const d = new Date(lunes); d.setDate(lunes.getDate() + i);
     return { label: DIAS_SHORT[i], fecha: formatFecha(d), esHoy: formatFecha(d) === hoy };
   });
 
   const reservas = RESERVAS.filter(r => r.equipo === equipoActivo);
+  const PIXELS_POR_HORA = 50;
+  const HORA_INICIO = 9; // 09:00
 
-  // convierte "HH:MM" a minutos
-  const toMin = s => { const [h,m] = s.split(":").map(Number); return h*60+(m||0); };
+  const toMin = s => { 
+    const [h,m] = s.split(":").map(Number); 
+    return h * 60 + (m || 0); 
+  };
 
+  // 1. Cabecera
   let html = `<div class="grilla-header">
-    <div class="grilla-header-cell" style="font-size:11px;display:flex;align-items:center;justify-content:center;color:var(--muted)">Hora</div>
+    <div class="grilla-header-cell"></div>
     ${dias.map(d => `
       <div class="grilla-header-cell${d.esHoy?' hoy':''}">
         <span style="text-transform:uppercase;letter-spacing:.05em">${d.label}</span>
@@ -348,53 +346,50 @@ function renderGrilla() {
       </div>`).join("")}
   </div>`;
 
-  HORAS.forEach((hora, hi) => {
-    const siguiente = HORAS[hi+1] || "19:00";
-    const horaMin    = toMin(hora);
-    const siguienteMin = toMin(siguiente);
+  // 2. Cuerpo
+  html += `<div class="grilla-cuerpo">`;
+  
+  // Columna de horas
+  html += `<div class="hora-label-col">
+    ${HORAS.map(h => `<div class="hora-hito">${h}</div>`).join("")}
+  </div>`;
 
-    html += `<div class="grilla-row">
-      <div class="hora-label">${hora}</div>
-      ${dias.map(d => {
-        // reservas que se solapan con esta franja horaria
-        const bloques = reservas.filter(r => {
-          if (r.fecha !== d.fecha) return false;
-          const ini = toMin(r.horaIni);
-          const fin = toMin(r.horaFin);
-          return ini < siguienteMin && fin > horaMin; // hay solapamiento
-        });
+  // Columnas de días
+  dias.forEach(d => {
+    const reservasDia = reservas.filter(r => r.fecha === d.fecha);
+    
+    html += `<div class="dia-columna${d.esHoy?' hoy':''}">`;
+    
+    reservasDia.forEach(b => {
+      const minInicio = toMin(b.horaIni);
+      const minFin    = toMin(b.horaFin);
+      const minDesde9 = minInicio - (HORA_INICIO * 60);
+      const duracion  = minFin - minInicio;
 
-        return `<div class="celda${d.esHoy?' hoy':''}">
-          ${bloques.map(b => {
-            const ini = toMin(b.horaIni);
-            const fin = toMin(b.horaFin);
-            const esInicio = ini >= horaMin && ini < siguienteMin;
-            const esMedio  = ini < horaMin && fin > siguienteMin;
-            const esFin    = fin > horaMin && fin <= siguienteMin;
+      // Calculamos posición y altura (proporcional a los 50px por hora)
+      const top = (minDesde9 / 60) * PIXELS_POR_HORA;
+      const height = (duracion / 60) * PIXELS_POR_HORA;
 
-            // estilo según posición del bloque
-            const borderTop    = esInicio ? "border-radius:5px 5px 0 0;" : "border-radius:0;border-top:none;";
-            const borderBottom = (fin <= siguienteMin) ? "border-radius:0 0 5px 5px;" : "border-radius:0;";
-            const radius = esInicio && fin <= siguienteMin
-              ? "border-radius:5px;"           // bloque de 1 hora exacta
-              : esInicio
-              ? "border-radius:5px 5px 0 0;"   // inicio
-              : fin <= siguienteMin
-              ? "border-radius:0 0 5px 5px;"   // fin
-              : "border-radius:0;";             // medio
+      // Solo dibujar si está dentro del rango visible
+      if (top >= 0 && top < (HORAS.length * PIXELS_POR_HORA)) {
+        html += `
+          <div class="bloque ${b.estado}" 
+               style="top: ${top}px; height: ${height}px;">
+            <strong>${b.horaIni} – ${b.horaFin}</strong>
+            <span>${b.solicitante}</span>
+            <div class="tooltip">
+              <b>${b.solicitante}</b><br>
+              ${b.proyecto}<br>
+              ${b.horaIni} – ${b.horaFin}
+            </div>
+          </div>`;
+      }
+    });
 
-            return `<div class="bloque ${b.estado}" style="position:relative;${radius}${!esInicio?'border-top:none;margin-top:-3px;':''}">${
-              esInicio
-                ? `<strong>${b.horaIni}–${b.horaFin}</strong><span>${b.solicitante}</span>
-                   <div class="tooltip">${b.solicitante}<br>${b.proyecto}<br>${b.horaIni}–${b.horaFin}</div>`
-                : `<span style="opacity:0.4;font-size:9px">&nbsp;</span>` // celda de continuación
-            }</div>`;
-          }).join("")}
-        </div>`;
-      }).join("")}
-    </div>`;
+    html += `</div>`;
   });
 
+  html += `</div>`; // fin grilla-cuerpo
   document.getElementById("grilla").innerHTML = html;
 }
 
