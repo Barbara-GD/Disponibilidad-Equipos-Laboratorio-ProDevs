@@ -110,6 +110,20 @@ header p  { font-size: 13px; opacity: 0.75; }
   z-index: 2;
   background: var(--cream); /* Para que las horas no se mezclen con el logo */
 } 
+/* Bloque para horarios no laborales (Viernes tarde) */
+.bloque.cerrado {
+  background: #f2f2f2;
+  border-left: 4px solid #d1d1d1;
+  color: #999;
+  z-index: 2; /* Un poco menos que las reservas reales */
+  cursor: not-allowed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}  
 </style>
 </head>
 <body>
@@ -265,19 +279,36 @@ function renderGrilla() {
 
   dias.forEach(d => {
     html += `<div class="dia-columna ${d.esHoy?'hoy':''}">`;
-    reservas.filter(r => r.fecha === d.fecha).forEach(b => {
-      const minI = toMin(b.horaIni);
-      const minF = toMin(b.horaFin);
-      const top = ((minI - H_INICIO) / 60) * 50;
-      const height = ((minF - minI) / 60) * 50;
+
+    // --- BLOQUEO DE VIERNES TARDE ---
+    if (d.label === "Vie") {
+      const minCierre = 14 * 60; // 14:00 hrs
+      const minFinCal = 18 * 60; // 18:00 hrs (ajusta si tu calendario termina a otra hora)
       
-      if (top >= 0) {
-        html += `<div class="bloque ${b.estado}" style="top:${top}px; height:${height}px">
-          <strong>${b.horaIni}-${b.horaFin}</strong>
-          <span>${b.solicitante}</span>
-          <div class="tooltip"><b>${b.solicitante}</b><br>${b.proyecto}</div>
-        </div>`;
-      }
+      const topC = ((minCierre - H_INICIO) / 60) * 50;
+      const heightC = ((minFinCal - minCierre) / 60) * 50;
+      
+      html += `<div class="bloque cerrado" style="top:${topC}px; height:${heightC}px; z-index:1;">
+                <span>HORARIO NO LABORAL</span>
+               </div>`;
+    }
+    // --------------------------------
+
+    reservas.filter(r => r.fecha === d.fecha).forEach(b => {
+      try {
+        const minI = toMin(b.horaIni);
+        const minF = toMin(b.horaFin);
+        const top = ((minI - H_INICIO) / 60) * 50;
+        const height = ((minF - minI) / 60) * 50;
+        
+        if (top >= 0) {
+          html += `<div class="bloque ${b.estado}" style="top:${top}px; height:${height}px">
+            <strong>${b.horaIni}-${b.horaFin}</strong>
+            <span>${b.solicitante}</span>
+            <div class="tooltip"><b>${b.solicitante}</b><br>${b.proyecto}</div>
+          </div>`;
+        }
+      } catch(e) { console.error("Error en bloque:", e); }
     });
     html += `</div>`;
   });
