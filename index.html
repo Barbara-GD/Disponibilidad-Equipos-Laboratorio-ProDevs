@@ -175,7 +175,7 @@ let semanaOffset = 0;
 // ── CARGA DE DATOS ───────────────────────────────────────────
 async function cargarReservas() {
   try {
-    const res = await fetch(SHEET_CSV_URL + "&t=" + Date.now()); // evita caché
+    const res = await fetch(SHEET_CSV_URL + "&t=" + Date.now());
     const csv = await res.text();
     const filas = csv.trim().split("\n").slice(1);
 
@@ -195,14 +195,12 @@ async function cargarReservas() {
 
     function normFecha(raw) {
       if (!raw) return "";
-      // intentar parsear M/D/YYYY o YYYY-MM-DD
       const d = new Date(raw);
       if (!isNaN(d)) return d.toISOString().slice(0,10);
       return raw;
     }
 
     RESERVAS = filas.map(fila => {
-      // parseo CSV robusto respetando campos entre comillas
       const cols = [];
       let cur = "", inQ = false;
       for (let c of fila) {
@@ -212,23 +210,31 @@ async function cargarReservas() {
       }
       cols.push(cur);
 
+      // --- CAMBIO AQUÍ: Lógica de estado y filtro ---
+      const estadoRaw = limpiar(cols[9]).toUpperCase();
+      
+      // Si está vacía o dice RECHAZADA, retornamos null para filtrarla después
+      if (estadoRaw === "RECHAZADA" || estadoRaw === "RECHAZADO" || estadoRaw === "RECHAZAR") {
+        return null;
+      }
+
       return {
-        // orden columnas: A=Timestamp B=Nombre C=Correo D=Fecha E=Proyecto F=Equipo G=HoraIni H=HoraFin I=Obs J=Estado
-        solicitante: limpiar(cols[1]),
+        // Verifica que cols[1] sea realmente donde está el Nombre en tu Excel
+        solicitante: limpiar(cols[1]), 
         email:       limpiar(cols[2]),
         fecha:       normFecha(limpiar(cols[3])),
         proyecto:    limpiar(cols[4]),
         equipo:      limpiar(cols[5]),
         horaIni:     normHora(limpiar(cols[6])),
         horaFin:     normHora(limpiar(cols[7])),
-        estado:      limpiar(cols[9]).toUpperCase() === "APROBADA" ? "aprobada" : "pendiente",
+        estado:      estadoRaw === "APROBADA" ? "aprobada" : "pendiente",
       };
-    }).filter(r => r.equipo && r.fecha);
+    }).filter(r => r !== null && r.equipo && r.fecha); // Filtramos los nulos (rechazados)
 
   } catch(e) {
     console.error("Error cargando reservas:", e);
     document.getElementById("grilla").innerHTML =
-      '<div class="estado-carga">⚠️ No se pudieron cargar las reservas. Verifica que el Sheet esté publicado como CSV.</div>';
+      '<div class="estado-carga">⚠️ Error al cargar datos.</div>';
     return;
   }
   renderGrilla();
