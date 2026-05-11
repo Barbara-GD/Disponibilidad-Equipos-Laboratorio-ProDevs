@@ -284,6 +284,9 @@ function renderGrilla() {
 
   const reservas = RESERVAS.filter(r => r.equipo === equipoActivo);
 
+  // convierte "HH:MM" a minutos
+  const toMin = s => { const [h,m] = s.split(":").map(Number); return h*60+(m||0); };
+
   let html = `<div class="grilla-header">
     <div class="grilla-header-cell" style="font-size:11px;display:flex;align-items:center;justify-content:center;color:var(--muted)">Hora</div>
     ${dias.map(d => `
@@ -295,19 +298,46 @@ function renderGrilla() {
 
   HORAS.forEach((hora, hi) => {
     const siguiente = HORAS[hi+1] || "19:00";
+    const horaMin    = toMin(hora);
+    const siguienteMin = toMin(siguiente);
+
     html += `<div class="grilla-row">
       <div class="hora-label">${hora}</div>
       ${dias.map(d => {
-        const bloques = reservas.filter(r =>
-          r.fecha === d.fecha && r.horaIni >= hora && r.horaIni < siguiente
-        );
+        // reservas que se solapan con esta franja horaria
+        const bloques = reservas.filter(r => {
+          if (r.fecha !== d.fecha) return false;
+          const ini = toMin(r.horaIni);
+          const fin = toMin(r.horaFin);
+          return ini < siguienteMin && fin > horaMin; // hay solapamiento
+        });
+
         return `<div class="celda${d.esHoy?' hoy':''}">
-          ${bloques.map(b => `
-            <div class="bloque ${b.estado}" style="position:relative">
-              <strong>${b.horaIni}–${b.horaFin}</strong>
-              <span>${b.solicitante}</span>
-              <div class="tooltip">${b.solicitante}<br>${b.proyecto}<br>${b.horaIni}–${b.horaFin}</div>
-            </div>`).join("")}
+          ${bloques.map(b => {
+            const ini = toMin(b.horaIni);
+            const fin = toMin(b.horaFin);
+            const esInicio = ini >= horaMin && ini < siguienteMin;
+            const esMedio  = ini < horaMin && fin > siguienteMin;
+            const esFin    = fin > horaMin && fin <= siguienteMin;
+
+            // estilo según posición del bloque
+            const borderTop    = esInicio ? "border-radius:5px 5px 0 0;" : "border-radius:0;border-top:none;";
+            const borderBottom = (fin <= siguienteMin) ? "border-radius:0 0 5px 5px;" : "border-radius:0;";
+            const radius = esInicio && fin <= siguienteMin
+              ? "border-radius:5px;"           // bloque de 1 hora exacta
+              : esInicio
+              ? "border-radius:5px 5px 0 0;"   // inicio
+              : fin <= siguienteMin
+              ? "border-radius:0 0 5px 5px;"   // fin
+              : "border-radius:0;";             // medio
+
+            return `<div class="bloque ${b.estado}" style="position:relative;${radius}${!esInicio?'border-top:none;margin-top:-3px;':''}">${
+              esInicio
+                ? `<strong>${b.horaIni}–${b.horaFin}</strong><span>${b.solicitante}</span>
+                   <div class="tooltip">${b.solicitante}<br>${b.proyecto}<br>${b.horaIni}–${b.horaFin}</div>`
+                : `<span style="opacity:0.4;font-size:9px">&nbsp;</span>` // celda de continuación
+            }</div>`;
+          }).join("")}
         </div>`;
       }).join("")}
     </div>`;
